@@ -1,3 +1,4 @@
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -49,10 +50,13 @@ try:
     partidos = driver.find_elements(By.CSS_SELECTOR, ".ScoreboardScoreCell")
     print(f"Encontrados {len(partidos)} partidos")
     
+    # Inicializar la lista para guardar los resultados
+    resultados_partidos = []
+    
     # 5. Procesar cada partido
     for i, partido in enumerate(partidos):
         try:
-            # Buscar equipos con la clase específica que mencionaste
+            # Buscar equipos con la clase específica
             equipos = partido.find_elements(By.CSS_SELECTOR, ".ScoreCell__TeamName.ScoreCell__TeamName--shortDisplayName.db")
             
             # Buscar marcadores
@@ -63,6 +67,14 @@ try:
                 equipo_visitante = equipos[1].text
                 marcador_local = marcadores[0].text
                 marcador_visitante = marcadores[1].text
+                
+                # Almacenar en la lista
+                resultados_partidos.append({
+                    "equipo_local": equipo_local,
+                    "marcador_local": marcador_local,
+                    "equipo_visitante": equipo_visitante,
+                    "marcador_visitante": marcador_visitante
+                })
                 
                 print(f"Partido {i+1}: {equipo_local} {marcador_local} - {marcador_visitante} {equipo_visitante}")
             else:
@@ -78,6 +90,15 @@ try:
             print(f"Liga {i+1}: {liga.text}")
     except:
         print("No se pudieron obtener las ligas")
+    
+    # Crear el DataFrame de Pandas si hay datos
+    if resultados_partidos:
+        df = pd.DataFrame(resultados_partidos)
+        print("\n--- Vista previa del DataFrame ---")
+        print(df.head())
+        print("----------------------------------\n")
+    else:
+        print("\nNo se encontraron resultados para crear el DataFrame.")
 
 except Exception as e:
     print(f"Error general: {str(e)}")
