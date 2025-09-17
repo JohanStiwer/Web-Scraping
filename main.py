@@ -88,9 +88,19 @@ try:
         df = df.dropna()
         df = df.reset_index(drop=True)
         
-        print("\n--- Vista previa del DataFrame limpio ---")
-        print(df.head())
-        print("------------------------------------------\n")
+        # --- AQUI VA LA LOGICA PARA SUMAR GOLES ---
+        total_goles_local = df['marcador_local'].sum()
+        total_goles_visitante = df['marcador_visitante'].sum()
+        
+        # --- AQUI VA LA LOGICA PARA HACER PROMEDIO DE GOLES ---
+        promedio_goles_local = df['marcador_local'].mean().round(2)
+        promedio_goles_visitante = df['marcador_visitante'].mean().round(2)
+        
+        print(f"⚽ Total de goles de equipos locales: {total_goles_local}")
+        print(f"🥅 Total de goles de equipos visitantes: {total_goles_visitante}")
+        # ------------------------------------------
+        print(f"⚽ Promedio de goles local: {promedio_goles_local}")
+        print(f"🥅 Promedio de goles Visitante: {promedio_goles_visitante}")
     else:
         print("\nNo se encontraron resultados para crear el DataFrame.")
 
