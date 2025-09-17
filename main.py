@@ -56,10 +56,7 @@ try:
     # 5. Procesar cada partido
     for i, partido in enumerate(partidos):
         try:
-            # Buscar equipos con la clase específica
             equipos = partido.find_elements(By.CSS_SELECTOR, ".ScoreCell__TeamName.ScoreCell__TeamName--shortDisplayName.db")
-            
-            # Buscar marcadores
             marcadores = partido.find_elements(By.CSS_SELECTOR, ".ScoreCell__Score")
             
             if len(equipos) >= 2 and len(marcadores) >= 2:
@@ -68,35 +65,32 @@ try:
                 marcador_local = marcadores[0].text
                 marcador_visitante = marcadores[1].text
                 
-                # Almacenar en la lista
-                resultados_partidos.append({
-                    "equipo_local": equipo_local,
-                    "marcador_local": marcador_local,
-                    "equipo_visitante": equipo_visitante,
-                    "marcador_visitante": marcador_visitante
-                })
-                
-                print(f"Partido {i+1}: {equipo_local} {marcador_local} - {marcador_visitante} {equipo_visitante}")
-            else:
-                print(f"Partido {i+1}: No se encontraron todos los datos necesarios")
-                
+                # Almacenar en la lista solo si los marcadores son dígitos
+                if marcador_local.isdigit() and marcador_visitante.isdigit():
+                    resultados_partidos.append({
+                        "equipo_local": equipo_local,
+                        "marcador_local": marcador_local,
+                        "equipo_visitante": equipo_visitante,
+                        "marcador_visitante": marcador_visitante
+                    })
+                    print(f"Partido {i+1}: {equipo_local} {marcador_local} - {marcador_visitante} {equipo_visitante}")
+            # El código no imprime nada si los datos no son válidos, simplemente los salta.
         except Exception as e:
+            # Puedes usar 'pass' para no hacer nada o dejar un 'print' para depuración.
             print(f"Error en partido {i+1}: {str(e)}")
     
-    # 6. Opcional: También buscar información adicional como ligas o tiempos
-    try:
-        ligas = driver.find_elements(By.CSS_SELECTOR, ".Card__Header__Title")
-        for i, liga in enumerate(ligas):
-            print(f"Liga {i+1}: {liga.text}")
-    except:
-        print("No se pudieron obtener las ligas")
-    
-    # Crear el DataFrame de Pandas si hay datos
+    # 6. Crear y limpiar el DataFrame de Pandas
     if resultados_partidos:
         df = pd.DataFrame(resultados_partidos)
-        print("\n--- Vista previa del DataFrame ---")
+        
+        df['marcador_local'] = pd.to_numeric(df['marcador_local'], errors='coerce')
+        df['marcador_visitante'] = pd.to_numeric(df['marcador_visitante'], errors='coerce')
+        df = df.dropna()
+        df = df.reset_index(drop=True)
+        
+        print("\n--- Vista previa del DataFrame limpio ---")
         print(df.head())
-        print("----------------------------------\n")
+        print("------------------------------------------\n")
     else:
         print("\nNo se encontraron resultados para crear el DataFrame.")
 
@@ -105,7 +99,6 @@ except Exception as e:
     print(f"URL final: {driver.current_url}")
     print(f"Título: {driver.title}")
     
-    # Guardar HTML para debug
     with open('debug_page.html', 'w', encoding='utf-8') as f:
         f.write(driver.page_source)
     print("HTML guardado en debug_page.html")
